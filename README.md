@@ -34,6 +34,10 @@ Beyond the core scheduler, the following features were added to make task planni
 
 - **Conflict detection** — After generating a schedule, the scheduler checks all fixed-time tasks for overlapping time windows. Any conflicts are surfaced as warnings rather than errors, so the schedule is still shown and the user can decide how to resolve them.
 
+## Demo
+
+![PawPal+ App Screenshot](demo_ss.png)
+
 ## Getting started
 
 ### Setup

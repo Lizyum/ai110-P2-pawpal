@@ -53,10 +53,16 @@ Classes:
 - What constraints does your scheduler consider (for example: time, priority, preferences)?
 - How did you decide which constraints mattered most?
 
+My scheduler considers time and priority. It prioritizes timed/fixed tasks over flexible tasks (no start time).
+
 **b. Tradeoffs**
 
 - Describe one tradeoff your scheduler makes.
 - Why is that tradeoff reasonable for this scenario?
+
+Fixed-time tasks are always anchored before flexible tasks, regardless of priority. This means, a CRITICAL flexible task will always appear AFTER a LOW fixed-time task in the schedule. The scheduler treats time commitment as a harder constraint than urgency.
+
+Why it's reasonable: Fixed appointments have external dependencies (a vet, a groomer) that can't be moved, so respecting their time is non-negotiable. Flexible tasks can be slotted around them.
 
 ---
 
@@ -67,10 +73,13 @@ Classes:
 - How did you use AI tools during this project (for example: design brainstorming, debugging, refactoring)?
 - What kinds of prompts or questions were most helpful?
 
+I used Claude to help me reason between design choices and refactoring code. It was helpful to work with Claude across different files as we implemented backend logic, verified it by implementing tests, and connecting it with the UI. Working with Claude across these files made it more manageable to make changes that persist across different areas of the stack. Though, it does require keen awareness of changes being made and knowledge of how everything connects across files.
+
 **b. Judgment and verification**
 
 - Describe one moment where you did not accept an AI suggestion as-is.
 - How did you evaluate or verify what the AI suggested?
+Whenever Claude wanted to make huge changes to a file, it helped to deny the suggestion and guide it toward more incremental changes, which forces it to explain every line of code it suggests and makes it easier to spot potential bugs.
 
 ---
 
@@ -81,10 +90,14 @@ Classes:
 - What behaviors did you test?
 - Why were these tests important?
 
+ANSWERED IN README.md
+
 **b. Confidence**
 
 - How confident are you that your scheduler works correctly?
 - What edge cases would you test next if you had more time?
+
+ANSWERED IN README.md
 
 ---
 
@@ -93,11 +106,14 @@ Classes:
 **a. What went well**
 
 - What part of this project are you most satisfied with?
+I found the backend → test → UI workflow intuitive and satisfying. Having Claude assist at each layer made the process feel less daunting. One thing I'd reconsider at scale is the flat directory structure — separating logic, tests, and UI into their own modules would improve organization, though for a project this size it kept things simple and easy to navigate. I wonder how Claude would perform in bigger filesystems/projects.
 
 **b. What you would improve**
 
 - If you had another iteration, what would you improve or redesign?
+In another iteration, I would restructure the project directory to separate concerns more cleanly — moving backend logic into a src/ or core/ module, keeping tests in their own tests/ directory (which we did), and isolating UI code in app.py with minimal business logic. For a project this size, the flat structure worked fine, but as features grew (recurring tasks, conflict detection, filtering), it became clear that a larger system would benefit from that separation early on.
 
 **c. Key takeaway**
 
 - What is one important thing you learned about designing systems or working with AI on this project?
+The most important thing I learned is that working with AI is most effective when you treat it as a collaborator at each stage rather than asking it to generate everything at once. Breaking the work into layers — design the UML, stub the classes, implement one method at a time, test it, then wire it to the UI — gave me the opportunity to understand and validate each decision before moving forward. AI accelerates the process, but the judgment calls about structure, tradeoffs, and what belongs where still require the developer to think critically and push back when something doesn't feel right.

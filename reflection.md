@@ -2,10 +2,32 @@
 
 ## 1. System Design
 
+Core Actions: 
+1. Add a pet profile
+2. View daily tasks
+3. Allow for user to add/edit tasks (including removal of tasks upon completion?)
+
 **a. Initial design**
 
 - Briefly describe your initial UML design.
 - What classes did you include, and what responsibilities did you assign to each?
+
+Classes:
+1. **Owner** : This class is meant to handle all owner profile configuration
+- Attributes: UUID, Name
+- Methods: createProfile
+
+2. **Pets** : This class is meant to handle all pet profile configuration
+- Attributes: UUID, OwnerID, Name, Breed, Age, MedicationID
+- Methods: createPetProfile
+
+3. **Tasks** : This class is meant to handle all task configuration (including removal/editing of tasks)
+- Attributes: ID, OwnerID, PetID, Date, Priority, TaskName, TaskDescription, Duration, Completed?
+- Methods: addTask, removeTask, editTask
+
+4. **Scheduler** : This class is meant to encapsulate the 'smart' functionality of our tool, that generates a schedule based on the owner's list of tasks for the day (evaluates each task's priority, duration, and owner's availablity)
+- Attributes: Date, Schedule
+- Methods: generateDaySchedule
 
 **b. Design changes**
 

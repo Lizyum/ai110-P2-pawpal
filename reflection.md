@@ -34,6 +34,16 @@ Classes:
 - Did your design change during implementation?
 - If yes, describe at least one change and why you made it.
 
+**Changes Made:**
+- Moved the edit/add task methods to be a part of the Owner class. Our first implementation forgot to account for the list of tasks that have to be visible from the Owner class in order to create a schedule for the owner. Therefore, with the list of tasks living in the Owner class, the methods to remove or add to that list should easily access that list, which would not have been possible if these methods were part of the Tasks class (handles individal task configuration).
+
+**Summary of All Changes Made:**
+- Added `pets` and `tasks` list attributes to `Owner` to establish direct relationships between an owner and their data, replacing loose string ID references as the only link.
+- Added `owner_id` to `Scheduler` so schedule generation is scoped to a specific owner.
+- Converted `createProfile` and `createPetProfile` to class methods (`@classmethod`) since they construct new objects rather than operate on existing ones.
+- Replaced raw `int` priority on `Task` with a `Priority` enum (`LOW`, `MEDIUM`, `HIGH`, `CRITICAL`) to enforce valid values and improve readability.
+- Removed `addTask`/`removeTask` from `Task` and placed them on `Owner`, where the task list is accessible.
+
 ---
 
 ## 2. Scheduling Logic and Tradeoffs

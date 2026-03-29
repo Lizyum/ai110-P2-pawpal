@@ -53,3 +53,32 @@ pip install -r requirements.txt
 5. Add tests to verify key behaviors.
 6. Connect your logic to the Streamlit UI in `app.py`.
 7. Refine UML so it matches what you actually built.
+
+## Testing PawPal+
+
+Run the full test suite with:
+
+```bash
+python -m pytest tests/test_pawpal.py
+```
+
+### What's covered
+
+| Test | Description |
+|---|---|
+| `test_mark_complete_changes_status` | Verifies `mark_complete()` sets `completed = True` and returns `None` for non-recurring tasks |
+| `test_add_task_increases_pet_task_count` | Verifies `add_task()` correctly appends a task to a pet's task list |
+| `test_schedule_fixed_time_tasks_appear_before_flexible` | Verifies fixed-time tasks always appear before flexible tasks in the schedule, regardless of priority |
+| `test_schedule_fixed_tasks_ordered_by_start_time` | Verifies multiple fixed-time tasks are sorted chronologically |
+| `test_filter_tasks_by_pet` | Verifies `get_tasks_by_pet()` returns only tasks belonging to the specified pet |
+| `test_filter_tasks_by_status` | Verifies `get_tasks_by_status()` correctly separates completed and incomplete tasks |
+| `test_mark_complete_daily_returns_next_occurrence` | Verifies completing a daily task produces a new task dated one day later |
+| `test_mark_complete_weekly_returns_next_occurrence` | Verifies completing a weekly task produces a new task dated one week later |
+| `test_detect_conflicts_same_start_time` | Verifies the scheduler flags two overlapping fixed-time tasks as a conflict |
+| `test_no_conflicts_non_overlapping_tasks` | Verifies non-overlapping tasks produce no conflict warnings |
+
+### Confidence level
+
+★★★★☆ (4/5)
+
+All 10 tests pass. Core scheduling logic, filtering, recurrence, and conflict detection are well covered. The remaining gap is UI-level behavior (e.g. Streamlit interactions) and edge cases such as tasks that span midnight or recurring tasks with an end date, which are not yet tested.

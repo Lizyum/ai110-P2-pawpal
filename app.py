@@ -66,7 +66,7 @@ st.caption("Add a few tasks. In your final version, these should feed into your 
 if not st.session_state.owner.pets:
     st.info("Add at least one pet above before adding tasks.")
 else:
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
     with col1:
         task_title = st.text_input("Task title", value="Morning walk")
     with col2:
@@ -77,6 +77,11 @@ else:
         pet_options = {p.name: p for p in st.session_state.owner.pets}
         selected_pet_name = st.selectbox("Pet", list(pet_options.keys()))
         selected_pet = pet_options[selected_pet_name]
+    with col5:
+        has_start_time = st.checkbox("Fixed time?")
+        start_time_input = st.time_input("Start time", disabled=not has_start_time)
+
+    recurrence = st.selectbox("Recurrence", ["None", "Daily", "Weekly"])
 
     if st.button("Add task"):
         task = Task(
@@ -87,28 +92,58 @@ else:
             task_name=task_title,
             task_description="",
             duration=int(duration),
+            start_time=start_time_input if has_start_time else None,
+            recurrence=recurrence.lower() if recurrence != "None" else None,
         )
         selected_pet.add_task(task)
 
-all_tasks = st.session_state.owner.tasks
 pet_lookup = {p.uuid: p.name for p in st.session_state.owner.pets}
 pet_obj_lookup = {p.uuid: p for p in st.session_state.owner.pets}
+
+fcol1, fcol2 = st.columns(2)
+with fcol1:
+    pet_filter_options = ["All Pets"] + [p.name for p in st.session_state.owner.pets]
+    pet_filter = st.selectbox("Filter by pet", pet_filter_options)
+with fcol2:
+    status_filter = st.selectbox("Filter by status", ["All", "Incomplete", "Completed"])
+
+all_tasks = st.session_state.owner.tasks
+if pet_filter != "All Pets":
+    selected_filter_pet = next(p for p in st.session_state.owner.pets if p.name == pet_filter)
+    all_tasks = st.session_state.owner.get_tasks_by_pet(selected_filter_pet.uuid)
+if status_filter == "Completed":
+    all_tasks = [t for t in all_tasks if t.completed]
+elif status_filter == "Incomplete":
+    all_tasks = [t for t in all_tasks if not t.completed]
+
 if all_tasks:
     st.write("Current tasks:")
-    col1, col2, col3, col4, col5 = st.columns([2, 2, 1, 1, 1])
+    col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([2, 2, 1, 1, 1, 1, 1, 1, 1])
     col1.markdown("**Pet**")
     col2.markdown("**Task**")
-    col3.markdown("**Priority**")
-    col4.markdown("**Duration**")
-    col5.markdown("**Action**")
+    col3.markdown("**Date**")
+    col4.markdown("**Priority**")
+    col5.markdown("**Duration**")
+    col6.markdown("**Start Time**")
+    col7.markdown("**Recurrence**")
+    col8.markdown("**Done**")
+    col9.markdown("**Remove**")
     st.divider()
     for t in all_tasks:
-        col1, col2, col3, col4, col5 = st.columns([2, 2, 1, 1, 1])
+        col1, col2, col3, col4, col5, col6, col7, col8, col9 = st.columns([2, 2, 1, 1, 1, 1, 1, 1, 1])
         col1.write(pet_lookup.get(t.pet_id, "Unknown"))
         col2.write(t.task_name)
-        col3.write(t.priority.name)
-        col4.write(f"{t.duration} min")
-        if col5.button("Remove", key=t.id):
+        col3.write(t.date.strftime("%m/%d/%y"))
+        col4.write(t.priority.name)
+        col5.write(f"{t.duration} min")
+        col6.write(t.start_time.strftime("%I:%M %p") if t.start_time else "—")
+        col7.write(t.recurrence.capitalize() if t.recurrence else "—")
+        if col8.button("✓", key=f"done_{t.id}", disabled=t.completed):
+            next_task = t.mark_complete()
+            if next_task:
+                pet_obj_lookup[t.pet_id].add_task(next_task)
+            st.rerun()
+        if col9.button("✕", key=f"remove_{t.id}"):
             pet_obj_lookup[t.pet_id].remove_task(t.id)
             st.rerun()
 else:
@@ -125,7 +160,12 @@ if st.button("Generate schedule"):
     else:
         scheduler = Scheduler(owner_id=st.session_state.owner.uuid, date=date.today())
         schedule = scheduler.generate_day_schedule(st.session_state.owner)
-        st.success(f"Schedule generated for {date.today()}!")
+        conflicts = scheduler.detect_conflicts(pet_lookup)
+        if conflicts:
+            for warning in conflicts:
+                st.warning(warning)
+        else:
+            st.success(f"Schedule generated for {date.today()} — no conflicts detected!")
         st.table([
             {
                 "Order": i + 1,
@@ -133,6 +173,7 @@ if st.button("Generate schedule"):
                 "Task": t.task_name,
                 "Priority": t.priority.name,
                 "Duration (min)": t.duration,
+                "Start Time": t.start_time.strftime("%I:%M %p") if t.start_time else "—",
             }
             for i, t in enumerate(schedule)
         ])
